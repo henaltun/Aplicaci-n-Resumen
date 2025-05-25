@@ -3,17 +3,14 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
 from transformers import T5Tokenizer, T5ForConditionalGeneration
-from io import StringIO, BytesIO
+from io import BytesIO
 import docx
 from docx import Document
 from PIL import Image
 import base64
-import nltk
-
-nltk.download('punkt')
 
 # Cargar la imagen local
-with open("imagen fondo proyecto.jpg", "rb") as img_file:
+with open("C:/Users/Estuardo/Desktop/2025/Ingeniería de software/imagen fondo proyecto.jpg", "rb") as img_file:
     img_bytes = img_file.read()
     img_base64 = base64.b64encode(img_bytes).decode()
 
@@ -166,5 +163,5 @@ if st.button("🔍 Generar Resumen"):
         )
 
     else:
-        st.error("⚠️ Por favor, introduce o carga un texto para generar el resumen.") este es mi código
+        st.error("⚠️ Por favor, introduce o carga un texto para generar el resumen.")
 
