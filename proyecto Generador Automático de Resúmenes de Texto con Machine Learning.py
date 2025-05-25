@@ -63,8 +63,8 @@ def leer_docx(archivo):
 
 @st.cache_resource
 def cargar_summarizers():
-    summarizer_extractivo = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
-    summarizer_abstractive = pipeline("summarization", model="t5-base")
+    summarizer_extractivo = pipeline("summarization", model="mrm8488/bert2bert_shared-spanish-finetuned-summarization")
+    summarizer_abstractive = pipeline("summarization", model="csebuetnlp/mT5_multilingual_XLSum")
     return summarizer_extractivo, summarizer_abstractive
 
 def fragmentar_texto(texto, max_chunk=1000):
