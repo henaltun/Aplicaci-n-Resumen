@@ -10,20 +10,14 @@ from PIL import Image
 import base64
 import nltk
 
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
+nltk.download('punkt')
 
+# Establecer explícitamente el idioma español (aunque sumy solo soporta algunos correctamente)
+from sumy.utils import get_stop_words
 try:
-    nltk.data.find('tokenizers/perluniprops')
+    get_stop_words("spanish")
 except LookupError:
-    nltk.download('perluniprops')
-
-try:
-    nltk.data.find('tokenizers/nonbreaking_prefixes')
-except LookupError:
-    nltk.download('nonbreaking_prefixes')
+    nltk.download("stopwords")
 
 # Cargar la imagen local
 with open("imagen fondo proyecto.jpg", "rb") as img_file:
