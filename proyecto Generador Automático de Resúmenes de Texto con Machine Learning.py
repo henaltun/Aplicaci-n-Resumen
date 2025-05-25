@@ -40,7 +40,7 @@ def leer_docx(archivo):
 def cargar_summarizer():
     return pipeline("summarization", model="mrm8488/bert2bert_shared-spanish-finetuned-summarization")
 
-def fragmentar_texto(texto, max_chunk=500):
+def fragmentar_texto(texto, max_chunk=300):
     frases = re.split(r'(?<=[.?!])\s+', texto)
     chunks = []
     chunk = ""
@@ -49,10 +49,12 @@ def fragmentar_texto(texto, max_chunk=500):
             chunk += frase + " "
         else:
             chunks.append(chunk.strip())
+            if len(chunks) >= 3:  # Máximo 3 fragmentos
+                break
             chunk = frase + " "
-    if chunk:
+    if chunk and len(chunks) < 3:
         chunks.append(chunk.strip())
-    return chunks[:5]  # Máximo 5 fragmentos
+    return chunks
 
 def resumir_texto(texto, summarizer, max_length=150, min_length=30):
     chunks = fragmentar_texto(texto)
