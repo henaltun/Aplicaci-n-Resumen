@@ -1,31 +1,9 @@
 import streamlit as st
 import docx
-import base64
 from io import BytesIO
 from docx import Document
 import spacy
 from collections import Counter
-import re
-
-# ================= IMAGEN DE FONDO =====================
-with open("imagen fondo proyecto.jpg", "rb") as img_file:
-    img_bytes = img_file.read()
-    img_base64 = base64.b64encode(img_bytes).decode()
-
-st.markdown(
-    f"""
-    <style>
-    .stApp {{
-        background-image: url("data:image/jpg;base64,{img_base64}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        color: white;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 # ================= FUNCIONES =====================
 def leer_txt(archivo):
@@ -44,7 +22,6 @@ def resumen_extractivo_spacy(texto, max_oraciones=5):
     nlp = cargar_spacy()
     doc = nlp(texto)
 
-    # Tokenización por oraciones
     oraciones = list(doc.sents)
     palabras = [token.text.lower() for token in doc if token.is_alpha and not token.is_stop]
     frecuencia = Counter(palabras)
@@ -54,7 +31,6 @@ def resumen_extractivo_spacy(texto, max_oraciones=5):
         puntuacion = sum(frecuencia.get(token.text.lower(), 0) for token in oracion if token.is_alpha)
         puntuaciones[oracion] = puntuacion
 
-    # Seleccionamos las mejores oraciones
     oraciones_importantes = sorted(puntuaciones, key=puntuaciones.get, reverse=True)[:max_oraciones]
     oraciones_ordenadas = sorted(oraciones_importantes, key=lambda x: x.start)
     resumen = " ".join([oracion.text for oracion in oraciones_ordenadas])
@@ -73,13 +49,13 @@ def crear_word(texto):
     buffer.seek(0)
     return buffer
 
-# ================= INTERFAZ STREAMLIT =====================
-st.title("📝 Generador Automático de Resúmenes en Español (Versión Ligera con spaCy)")
+# ================= INTERFAZ =====================
+st.title("📝 Generador Automático de Resúmenes en Español (spaCy)")
 
-uploaded_file = st.file_uploader("Cargar archivo (.txt o .docx)", type=["txt", "docx"])
-texto_largo = st.text_area("O introduce tu texto largo aquí:", height=300)
+uploaded_file = st.file_uploader("📤 Cargar archivo (.txt o .docx)", type=["txt", "docx"])
+texto_largo = st.text_area("✍️ O escribe o pega tu texto aquí:", height=300)
 
-num_oraciones = st.slider("Número de oraciones en el resumen", min_value=2, max_value=15, value=5)
+num_oraciones = st.slider("🔢 Número de oraciones del resumen", min_value=2, max_value=15, value=5)
 
 if st.button("🔍 Generar Resumen"):
     if uploaded_file:
@@ -90,21 +66,21 @@ if st.button("🔍 Generar Resumen"):
 
     if texto_largo:
         if len(texto_largo) > 10000:
-            st.error("⚠️ El texto es demasiado largo. Por favor, limita a 10,000 caracteres.")
+            st.error("⚠️ Texto demasiado largo. Máximo 10,000 caracteres.")
             st.stop()
 
-        with st.spinner("Generando resumen extractivo con spaCy..."):
+        with st.spinner("Procesando texto con spaCy..."):
             resumen = resumen_extractivo_spacy(texto_largo, max_oraciones=num_oraciones)
 
-        st.success("✅ ¡Resumen generado exitosamente!")
+        st.success("✅ ¡Resumen generado!")
         st.subheader("📄 Resumen:")
         st.write(resumen)
-        st.write(f"✏️ El resumen contiene **{contar_palabras(resumen)} palabras**.")
+        st.write(f"✏️ Palabras en el resumen: **{contar_palabras(resumen)}**")
 
-        st.download_button("💾 Descargar .txt", resumen.encode('utf-8'), "resumen.txt", "text/plain")
-        st.download_button("💾 Descargar .docx", crear_word(resumen), "resumen.docx",
+        st.download_button("💾 Descargar resumen (.txt)", resumen.encode('utf-8'), "resumen.txt", "text/plain")
+        st.download_button("💾 Descargar resumen (.docx)", crear_word(resumen), "resumen.docx",
                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
     else:
-        st.error("⚠️ Por favor, introduce o carga un texto para generar el resumen.")
+        st.error("⚠️ Debes ingresar o cargar un texto primero.")
 
 
