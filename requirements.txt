@@ -4,4 +4,4 @@ transformers
 torch
 docx
 python-docx
-Pillow
+pillow
