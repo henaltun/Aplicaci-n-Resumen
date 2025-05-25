@@ -7,6 +7,8 @@ from io import StringIO
 import docx
 from PIL import Image
 import base64
+import tempfile
+from reportlab.pdfgen import canvas
 
 # Cargar la imagen local
 with open("imagen fondo proyecto.jpg", "rb") as img_file:
@@ -97,27 +99,43 @@ def resumen_abstractive(texto, max_input_length=512, max_output_length=150):
 def contar_palabras(texto):
     return len(texto.split())
 
+def guardar_resumen_en_docx(resumen):
+    doc = docx.Document()
+    doc.add_heading("Resumen Generado", level=1)
+    doc.add_paragraph(resumen)
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer
+
+def guardar_resumen_en_pdf(resumen):
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer)
+    c.setFont("Helvetica", 12)
+    text_object = c.beginText(40, 800)
+    for linea in resumen.split('\n'):
+        for sub_linea in [linea[i:i+90] for i in range(0, len(linea), 90)]:
+            text_object.textLine(sub_linea)
+    c.drawText(text_object)
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+
 # Interfaz de Streamlit
 st.title("📝 Generador Automático de Resúmenes de Texto")
-
 st.write("Introduce un texto largo, carga un archivo, o elige el tipo de resumen que deseas obtener:")
 
-# Opción para cargar archivo
 uploaded_file = st.file_uploader("Cargar archivo (.txt o .docx)", type=["txt", "docx"])
-
-# Ingreso de texto largo manualmente
 texto_largo = st.text_area("O introduce tu texto largo aquí:", height=300)
 
-# Opciones de resumen
 opcion = st.selectbox("Selecciona el tipo de resumen", ("Resumen Extractivo", "Resumen Abstractive"))
-
-# Opciones adicionales según el tipo de resumen
 if opcion == "Resumen Extractivo":
     num_oraciones = st.slider("Número de oraciones en el resumen", min_value=1, max_value=10, value=3)
 else:
-    max_palabras = st.slider("Máximo de palabras en el resumen", min_value=50, max_value=300, value=150, step=10)
+    max_palabras = st.slider("Máximo de palabras en el resumen", min_value=50, max_value=5000, value=300, step=10)
 
-# Botón para generar resumen
 if st.button("🔍 Generar Resumen"):
     if uploaded_file is not None:
         if uploaded_file.type == "text/plain":
@@ -131,23 +149,39 @@ if st.button("🔍 Generar Resumen"):
                 resumen = resumen_extractivo(texto_largo, num_oraciones=num_oraciones)
             else:
                 resumen = resumen_abstractive(texto_largo, max_output_length=max_palabras)
-        
-        st.success("¡Resumen generado exitosamente!")
 
+        st.success("¡Resumen generado exitosamente!")
         st.subheader("📄 Resumen:")
         st.write(resumen)
 
-        # Contar palabras del resumen
         num_palabras_resumen = contar_palabras(resumen)
         st.write(f"📝 El resumen contiene {num_palabras_resumen} palabras.")
 
-        # Botón para descargar el resumen como archivo .txt
+        # Descargar como .txt
         resumen_bytes = resumen.encode('utf-8')
         st.download_button(
-            label="💾 Descargar Resumen",
+            label="💾 Descargar como TXT",
             data=resumen_bytes,
             file_name="resumen.txt",
             mime="text/plain"
+        )
+
+        # Descargar como .docx
+        docx_buffer = guardar_resumen_en_docx(resumen)
+        st.download_button(
+            label="📄 Descargar como DOCX",
+            data=docx_buffer,
+            file_name="resumen.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+
+        # Descargar como .pdf
+        pdf_buffer = guardar_resumen_en_pdf(resumen)
+        st.download_button(
+            label="📑 Descargar como PDF",
+            data=pdf_buffer,
+            file_name="resumen.pdf",
+            mime="application/pdf"
         )
 
     else:
