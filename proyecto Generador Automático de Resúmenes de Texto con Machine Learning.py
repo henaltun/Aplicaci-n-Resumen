@@ -15,6 +15,16 @@ try:
 except LookupError:
     nltk.download('punkt')
 
+try:
+    nltk.data.find('tokenizers/perluniprops')
+except LookupError:
+    nltk.download('perluniprops')
+
+try:
+    nltk.data.find('tokenizers/nonbreaking_prefixes')
+except LookupError:
+    nltk.download('nonbreaking_prefixes')
+
 # Cargar la imagen local
 with open("imagen fondo proyecto.jpg", "rb") as img_file:
     img_bytes = img_file.read()
