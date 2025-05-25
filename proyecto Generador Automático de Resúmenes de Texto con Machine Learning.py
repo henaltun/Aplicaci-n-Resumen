@@ -48,6 +48,16 @@ st.markdown(
 )
 
 
+# ================= FUNCIONES DE PROCESAMIENTO =====================
+def leer_txt(archivo):
+    return archivo.getvalue().decode("utf-8")
+
+def leer_docx(archivo):
+    doc = docx.Document(archivo)
+    texto = "\n".join([p.text for p in doc.paragraphs])
+    return texto
+
+
 # Cachear los pipelines para no cargarlos cada vez
 @st.cache_resource
 def cargar_summarizers():
@@ -122,10 +132,33 @@ if st.button("🔍 Generar Resumen"):
                 # Para T5, agregamos prefijo "summarize: " para mejor rendimiento
                 texto_preprocesado = "summarize: " + texto_largo
                 resumen = resumir_texto(texto_preprocesado, summarizer_abstractive, max_length=max_palabras, min_length=30)
+
+        st.success("✅ ¡Resumen generado exitosamente!")
+        st.subheader("📄 Resultado:")
+        st.write(resumen)
+        st.write(f"📝 El resumen contiene **{contar_palabras(resumen)} palabras**.")
         
         st.success("¡Resumen generado exitosamente!")
         st.subheader("📄 Resumen:")
         st.write(resumen)
+
+        # Descargar .txt
+        st.download_button(
+            label="💾 Descargar .txt",
+            data=resumen.encode('utf-8'),
+            file_name="resumen.txt",
+            mime="text/plain"
+        )
+
+        # Descargar .docx
+        st.download_button(
+            label="💾 Descargar .docx",
+            data=crear_word(resumen),
+            file_name="resumen.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+
+        
     else:
         st.error("⚠️ Por favor, introduce o carga un texto para generar el resumen.")
 
