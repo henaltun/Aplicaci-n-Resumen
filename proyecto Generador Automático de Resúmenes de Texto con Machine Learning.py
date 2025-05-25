@@ -1,3 +1,10 @@
+import nltk
+
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+    
 import streamlit as st
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
@@ -8,6 +15,8 @@ import docx
 from docx import Document
 from PIL import Image
 import base64
+import nltk
+
 
 # Cargar la imagen local
 with open("imagen fondo proyecto.jpg", "rb") as img_file:
