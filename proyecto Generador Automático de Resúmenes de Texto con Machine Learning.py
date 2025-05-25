@@ -1,6 +1,6 @@
 import streamlit as st
 from sumy.parsers.plaintext import PlaintextParser
-from sumy.nlp.tokenizers import Tokenizer
+from sumy.nlp.tokenizers import Tokenizer as SumyTokenizer
 from sumy.summarizers.lsa import LsaSummarizer
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 from io import StringIO, BytesIO
@@ -81,7 +81,16 @@ def leer_docx(archivo):
 
 # Función para resumen extractivo
 def resumen_extractivo(texto, num_oraciones=3):
-    parser = PlaintextParser.from_string(texto, Tokenizer("english"))
+     try:
+        parser = PlaintextParser.from_string(texto, SumyTokenizer("english"))
+    except LookupError:
+        # Fallback simple: usar punto como separador de oraciones
+        from sumy.nlp.tokenizers import Tokenizer as BaseTokenizer
+        class SimpleTokenizer(BaseTokenizer):
+            def to_sentences(self, text):
+                return text.split(". ")
+        parser = PlaintextParser.from_string(texto, SimpleTokenizer("english"))
+
     summarizer = LsaSummarizer()
     resumen = summarizer(parser.document, num_oraciones)
     return ' '.join(str(oracion) for oracion in resumen)
