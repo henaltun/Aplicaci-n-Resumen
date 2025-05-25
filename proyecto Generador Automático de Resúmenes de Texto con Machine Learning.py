@@ -5,6 +5,7 @@ import re
 import base64
 from io import BytesIO
 from docx import Document
+import base64
 
 # ================= IMAGEN DE FONDO =====================
 with open("imagen fondo proyecto.jpg", "rb") as img_file:
