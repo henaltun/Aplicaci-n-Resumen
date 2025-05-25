@@ -3,6 +3,51 @@ from transformers import pipeline
 import docx
 import re
 
+# ================= IMAGEN DE FONDO =====================
+with open("imagen fondo proyecto.jpg", "rb") as img_file:
+    img_bytes = img_file.read()
+    img_base64 = base64.b64encode(img_bytes).decode()
+
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url("data:image/jpg;base64,{img_base64}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        color: white;
+    }}
+    label, .stSelectbox label, .stSlider label, .stFileUploader label {{
+        color: white !important;
+    }}
+    .stButton > button {{
+        background-color: #4CAF50;
+        color: white;
+        border-radius: 10px;
+        font-size: 18px;
+    }}
+    .stTextInput > div > div > input,
+    .stTextArea > div > textarea {{
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+    }}
+    .css-1v0mbdj, .css-1d391kg {{
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 15px;
+        padding: 1em;
+    }}
+    .css-1cpxqw2, .css-q8sbsg {{
+        color: white !important;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 # Cachear los pipelines para no cargarlos cada vez
 @st.cache_resource
 def cargar_summarizers():
