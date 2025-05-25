@@ -129,7 +129,7 @@ if st.button("🔍 Generar Resumen"):
             if opcion == "Resumen Extractivo":
                 resumen = resumir_texto(texto_largo, summarizer_extractivo, max_length=max_palabras, min_length=30)
             else:
-                texto_preprocesado = "summarize: " + texto_largo
+                texto_preprocesado = texto_largo
                 resumen = resumir_texto(texto_preprocesado, summarizer_abstractive, max_length=max_palabras, min_length=30)
 
         st.success("✅ ¡Resumen generado exitosamente!")
