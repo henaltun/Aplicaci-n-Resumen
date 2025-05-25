@@ -1,0 +1,7 @@
+streamlit
+sumy
+transformers
+torch
+docx
+python-docx
+Pillow
