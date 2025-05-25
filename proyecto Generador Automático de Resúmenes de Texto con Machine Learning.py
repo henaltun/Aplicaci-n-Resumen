@@ -9,7 +9,7 @@ from PIL import Image
 import base64
 
 # Cargar la imagen local
-with open("C:/Users/Estuardo/Desktop/2025/Ingeniería de software/imagen fondo proyecto.jpg", "rb") as img_file:
+with open("imagen fondo proyecto.jpg", "rb") as img_file:
     img_bytes = img_file.read()
     img_base64 = base64.b64encode(img_bytes).decode()
 
