@@ -12,12 +12,8 @@ import nltk
 
 nltk.download('punkt')
 
-# Establecer explícitamente el idioma español (aunque sumy solo soporta algunos correctamente)
-from sumy.utils import get_stop_words
-try:
-    get_stop_words("spanish")
-except LookupError:
-    nltk.download("stopwords")
+from sumy.nlp.tokenizers import Tokenizer
+
 
 # Cargar la imagen local
 with open("imagen fondo proyecto.jpg", "rb") as img_file:
@@ -85,7 +81,7 @@ def leer_docx(archivo):
 
 # Función para resumen extractivo
 def resumen_extractivo(texto, num_oraciones=3):
-    parser = PlaintextParser.from_string(texto, Tokenizer("spanish"))
+    parser = PlaintextParser.from_string(texto, Tokenizer("english"))
     summarizer = LsaSummarizer()
     resumen = summarizer(parser.document, num_oraciones)
     return ' '.join(str(oracion) for oracion in resumen)
