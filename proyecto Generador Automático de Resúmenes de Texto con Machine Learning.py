@@ -9,6 +9,8 @@ from PIL import Image
 import base64
 import tempfile
 from reportlab.pdfgen import canvas
+import nltk
+nltk.download("punkt")
 
 # Cargar la imagen local
 with open("imagen fondo proyecto.jpg", "rb") as img_file:
