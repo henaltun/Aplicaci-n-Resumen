@@ -16,7 +16,7 @@ from docx import Document
 from PIL import Image
 import base64
 import nltk
-
+nltk.download('punkt')
 
 # Cargar la imagen local
 with open("imagen fondo proyecto.jpg", "rb") as img_file:
