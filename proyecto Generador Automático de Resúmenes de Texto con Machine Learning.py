@@ -3,12 +3,11 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
 from transformers import T5Tokenizer, T5ForConditionalGeneration
-from io import StringIO
+from io import StringIO, BytesIO
 import docx
 from PIL import Image
 import base64
 import tempfile
-from reportlab.pdfgen import canvas
 import nltk
 nltk.download("punkt")
 
@@ -18,7 +17,6 @@ with open("imagen fondo proyecto.jpg", "rb") as img_file:
     img_base64 = base64.b64encode(img_bytes).decode()
 
 # Estilos personalizados con CSS
-# Insertar imagen de fondo usando base64
 st.markdown(
     f"""
     <style>
@@ -29,11 +27,9 @@ st.markdown(
         background-repeat: no-repeat;
         color: #FFFFFF;
     }}
-
-     label, .stSelectbox label, .stSlider label, .stFileUploader label {{
+    label, .stSelectbox label, .stSlider label, .stFileUploader label {{
         color: white !important;
     }}
-
     .stButton > button {{
         background-color: #4CAF50;
         color: white;
@@ -41,34 +37,28 @@ st.markdown(
         padding: 0.5em 1em;
         font-size: 18px;
     }}
-
     .stTextInput > div > div > input, .stTextArea > div > textarea {{
         background-color: rgba(0, 0, 0, 0.6);
         color: #FFFFFF;
         border: 1px solid #ccc;
         border-radius: 10px;
     }}
-
     .css-1v0mbdj, .css-1d391kg, .st-cj {{
         background-color: rgba(0, 0, 0, 0.5);
         border-radius: 15px;
         padding: 1em;
-
-     }}
-
+    }}
     .css-1cpxqw2, .css-q8sbsg, .css-10trblm {{
         color: white !important;
-        
     }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
-
 # Función para leer archivo .txt
 def leer_txt(archivo):
-    return archivo.getvalue()
+    return archivo.getvalue().decode("utf-8")
 
 # Función para leer archivo .docx
 def leer_docx(archivo):
@@ -101,6 +91,7 @@ def resumen_abstractive(texto, max_input_length=512, max_output_length=150):
 def contar_palabras(texto):
     return len(texto.split())
 
+# Guardar resumen como .docx
 def guardar_resumen_en_docx(resumen):
     doc = docx.Document()
     doc.add_heading("Resumen Generado", level=1)
@@ -110,7 +101,9 @@ def guardar_resumen_en_docx(resumen):
     buffer.seek(0)
     return buffer
 
+# Guardar resumen como .pdf
 def guardar_resumen_en_pdf(resumen):
+    from reportlab.pdfgen import canvas
     buffer = BytesIO()
     c = canvas.Canvas(buffer)
     c.setFont("Helvetica", 12)
@@ -123,7 +116,6 @@ def guardar_resumen_en_pdf(resumen):
     c.save()
     buffer.seek(0)
     return buffer
-
 
 # Interfaz de Streamlit
 st.title("📝 Generador Automático de Resúmenes de Texto")
