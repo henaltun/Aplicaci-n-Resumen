@@ -1,10 +1,3 @@
-import nltk
-
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
-    
 import streamlit as st
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
@@ -16,6 +9,7 @@ from docx import Document
 from PIL import Image
 import base64
 import nltk
+
 nltk.download('punkt')
 
 # Cargar la imagen local
