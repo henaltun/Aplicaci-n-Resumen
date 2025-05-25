@@ -1,13 +1,12 @@
 import streamlit as st
 from transformers import pipeline
 import docx
-import re
 import base64
 from io import BytesIO
 from docx import Document
 import gc
 
-# =========== FONDO ============
+# ================= IMAGEN DE FONDO =====================
 with open("imagen fondo proyecto.jpg", "rb") as img_file:
     img_bytes = img_file.read()
     img_base64 = base64.b64encode(img_bytes).decode()
@@ -27,7 +26,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# =========== FUNCIONES ============
+# ================= FUNCIONES =====================
 def leer_txt(archivo):
     return archivo.getvalue().decode("utf-8")
 
@@ -38,32 +37,7 @@ def leer_docx(archivo):
 
 @st.cache_resource
 def cargar_summarizer():
-    return pipeline("summarization", model="mrm8488/bert2bert_shared-spanish-finetuned-summarization")
-
-def fragmentar_texto(texto, max_chunk=300):
-    frases = re.split(r'(?<=[.?!])\s+', texto)
-    chunks = []
-    chunk = ""
-    for frase in frases:
-        if len(chunk) + len(frase) <= max_chunk:
-            chunk += frase + " "
-        else:
-            chunks.append(chunk.strip())
-            if len(chunks) >= 3:  # Máximo 3 fragmentos
-                break
-            chunk = frase + " "
-    if chunk and len(chunks) < 3:
-        chunks.append(chunk.strip())
-    return chunks
-
-def resumir_texto(texto, summarizer, max_length=150, min_length=30):
-    chunks = fragmentar_texto(texto)
-    resumenes = []
-    for c in chunks:
-        res = summarizer(c, max_length=max_length, min_length=min_length, do_sample=False)
-        resumenes.append(res[0]['summary_text'])
-    resumen_final = " ".join(resumenes)
-    return resumen_final
+    return pipeline("summarization", model="mrm8488/t5-small-finetuned-summarization-es")
 
 def crear_word(texto):
     doc = Document()
@@ -74,36 +48,44 @@ def crear_word(texto):
     buffer.seek(0)
     return buffer
 
-# =========== INTERFAZ STREAMLIT ============
-st.title("📝 Generador de Resumen Extractivo")
+# ================= INTERFAZ STREAMLIT =====================
+st.title("📝 Generador Automático de Resúmenes (Abstractive)")
 
 uploaded_file = st.file_uploader("Cargar archivo (.txt o .docx)", type=["txt", "docx"])
-texto_largo = st.text_area("O escribe tu texto:", height=300)
-max_palabras = st.slider("Máximo de palabras", 50, 300, 120, step=10)
+texto_largo = st.text_area("O escribe tu texto aquí (máx. 1500 caracteres):", height=300)
+
+max_palabras = st.slider("Máximo de palabras del resumen", min_value=30, max_value=200, value=100, step=10)
 
 if st.button("🔍 Generar Resumen"):
     if uploaded_file:
         if uploaded_file.type == "text/plain":
             texto_largo = leer_txt(uploaded_file)
-        else:
+        elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
             texto_largo = leer_docx(uploaded_file)
 
     if texto_largo:
-        if len(texto_largo) > 5000:
-            st.error("⚠️ Texto muy largo. Máximo 5000 caracteres.")
+        if len(texto_largo) > 1500:
+            st.error("⚠️ El texto es demasiado largo. Por favor, limita a 1500 caracteres.")
             st.stop()
 
         with st.spinner("Generando resumen..."):
             summarizer = cargar_summarizer()
-            resumen = resumir_texto(texto_largo, summarizer, max_length=min(max_palabras, 200))
-            del summarizer
-            gc.collect()
+            entrada = "summarize: " + texto_largo
+            resumen = summarizer(entrada, max_length=max_palabras, min_length=30, do_sample=False)[0]['summary_text']
 
-        st.success("✅ Resumen generado")
+        st.success("✅ ¡Resumen generado exitosamente!")
         st.subheader("📄 Resumen:")
         st.write(resumen)
-        st.download_button("💾 Descargar .txt", resumen.encode(), "resumen.txt")
-        st.download_button("💾 Descargar .docx", crear_word(resumen), "resumen.docx")
+        st.write(f"✏️ El resumen contiene **{len(resumen.split())} palabras**.")
+
+        st.download_button("💾 Descargar .txt", resumen.encode('utf-8'), "resumen.txt", "text/plain")
+        st.download_button("💾 Descargar .docx", crear_word(resumen), "resumen.docx",
+                           "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+        # Liberar memoria
+        del summarizer
+        gc.collect()
     else:
-        st.error("⚠️ Ingresa o carga un texto primero.")
+        st.error("⚠️ Por favor, introduce o carga un texto para generar el resumen.")
+
 
