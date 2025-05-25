@@ -18,7 +18,6 @@ with open("imagen fondo proyecto.jpg", "rb") as img_file:
     img_base64 = base64.b64encode(img_bytes).decode()
 
 # Estilos personalizados con CSS
-# Insertar imagen de fondo usando base64
 st.markdown(
     f"""
     <style>
@@ -30,7 +29,7 @@ st.markdown(
         color: #FFFFFF;
     }}
 
-     label, .stSelectbox label, .stSlider label, .stFileUploader label {{
+    label, .stSelectbox label, .stSlider label, .stFileUploader label {{
         color: white !important;
     }}
 
@@ -65,10 +64,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 # Función para leer archivo .txt
 def leer_txt(archivo):
-    return archivo.getvalue()
+    return archivo.getvalue().decode("utf-8")
 
 # Función para leer archivo .docx
 def leer_docx(archivo):
@@ -101,11 +99,11 @@ def resumen_abstractive(texto, max_input_length=512, max_output_length=150):
 def contar_palabras(texto):
     return len(texto.split())
 
-# Función para crear archivo Word con el resumen
-def crear_docx(texto_resumen):
+# Función para crear archivo Word en memoria
+def crear_word(texto):
     doc = Document()
-    doc.add_heading('Resumen Generado', level=1)
-    doc.add_paragraph(texto_resumen)
+    doc.add_heading("Resumen Generado", 0)
+    doc.add_paragraph(texto)
     buffer = BytesIO()
     doc.save(buffer)
     buffer.seek(0)
@@ -116,22 +114,17 @@ st.title("📝 Generador Automático de Resúmenes de Texto")
 
 st.write("Introduce un texto largo, carga un archivo, o elige el tipo de resumen que deseas obtener:")
 
-# Opción para cargar archivo
 uploaded_file = st.file_uploader("Cargar archivo (.txt o .docx)", type=["txt", "docx"])
 
-# Ingreso de texto largo manualmente
 texto_largo = st.text_area("O introduce tu texto largo aquí:", height=300)
 
-# Opciones de resumen
 opcion = st.selectbox("Selecciona el tipo de resumen", ("Resumen Extractivo", "Resumen Abstractive"))
 
-# Opciones adicionales según el tipo de resumen
 if opcion == "Resumen Extractivo":
-    num_oraciones = st.slider("Número de oraciones en el resumen", min_value=1, max_value=10, value=3)
+    num_oraciones = st.slider("Número de oraciones en el resumen", min_value=1, max_value=30, value=3)
 else:
-    max_palabras = st.slider("Máximo de palabras en el resumen", min_value=50, max_value=300, value=150, step=10)
+    max_palabras = st.slider("Máximo de palabras en el resumen", min_value=50, max_value=500, value=150, step=10)
 
-# Botón para generar resumen
 if st.button("🔍 Generar Resumen"):
     if uploaded_file is not None:
         if uploaded_file.type == "text/plain":
@@ -151,11 +144,10 @@ if st.button("🔍 Generar Resumen"):
         st.subheader("📄 Resumen:")
         st.write(resumen)
 
-        # Contar palabras del resumen
         num_palabras_resumen = contar_palabras(resumen)
         st.write(f"📝 El resumen contiene {num_palabras_resumen} palabras.")
 
-        # Descargar resumen en txt
+        # Descargar .txt
         resumen_bytes = resumen.encode('utf-8')
         st.download_button(
             label="💾 Descargar Resumen (.txt)",
@@ -163,16 +155,17 @@ if st.button("🔍 Generar Resumen"):
             file_name="resumen.txt",
             mime="text/plain"
         )
-        
-        # Descargar resumen en docx
-        docx_buffer = crear_docx(resumen)
+
+        # Descargar .docx
+        word_buffer = crear_word(resumen)
         st.download_button(
             label="💾 Descargar Resumen (.docx)",
-            data=docx_buffer,
+            data=word_buffer,
             file_name="resumen.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
 
     else:
         st.error("⚠️ Por favor, introduce o carga un texto para generar el resumen.")
+
 
